@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : PCB Document [6C-2L-1550um.PcbDoc]
+   Generated File[reflexios_front.TXT]
+   Generated File[reflexios_front.LDP]
+   Generated File[reflexios_front.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 20:10:22 On 2017.10.30.

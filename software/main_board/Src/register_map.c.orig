@@ -1,0 +1,85 @@
+/*
+ * register_map.c
+ *
+ *  Created on: Nov 7, 2017
+ *      Author: smate
+ */
+
+
+#include "register_map.h"
+
+void InitRegisters(void)
+{
+	LinePositionFront = 0.0;
+	LinePositionBack = 0.0;
+	LineAngle = 0.0;
+	LineNumFront = 0;
+	LineNumBack = 0;
+	speed = 2250;
+	wheel = 4180;
+	SELFTEST = 0x00;
+	DebugFirstRun = 0xFF;
+
+	velocity = 0;
+
+	counter_reg_prev = 0;	//encoder
+	counter_reg = 0;		//encoder
+	delta_reg = 0;			//encoder
+	T_sampling = 0.03;
+
+	DebugState = 0x00;
+	DebugMode = 0x00;
+	Running = 0x00;
+	Timestamp = 0x00;
+	LinePositionFront = 4.4;
+	LinePositionBack = 3.3;
+	LineAngle = 2.1;
+	LineNumFront = 0x00;
+	LineNumBack = 0x00;
+	LinearX = 0x00;
+	LinearY = 0x00;
+	LinearZ = 0x00;
+	AngularX = 0x00;
+	AngularY = 0x00;
+	AngularZ = 0x00;
+	DistanceFront = 0x00;
+	DistanceLeft = 0x00;
+	DistanceRight = 0x00;
+<<<<<<< HEAD
+	Speed = 0.0;
+=======
+	Speed = 0x00;
+	SpeedSP = 2250;
+>>>>>>> ciklusidofix
+	MotorCurrent = 0x00;
+	SpeedSP = 2250;
+
+	SpeedSPGyors=3700;
+	SpeedSPFek=1800;
+	SpeedSPKanyar=3200;
+
+	KpGyors=2.75;
+	KpKanyar=20;
+	KdGyors=0.6;
+	KdKanyar=0;
+
+	BatteryMotor = 0x00;
+	BatteryLogic = 0x00;
+	ServoPos = 0x00;
+<<<<<<< HEAD
+	Kp = KpKanyar;
+	Ki = 1;//Jelenleg nem használjuk
+	Kd = KdKanyar;
+=======
+	Kp = 30;
+	Ki = 1;//Jelenleg nem használjuk
+	Kd = 3;
+>>>>>>> ciklusidofix
+	for(uint8_t i = 0; i < 64 ; i++)
+	{
+		LineInfra[i] = i%2;
+	}
+
+
+	return;
+}
