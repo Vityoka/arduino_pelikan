@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>D:\REPOS\robonaut\the_worst_arduino_project_ever\firmware\main_board\\main_board</ProjectName>
+<ProjectName>F:\Projects\RobonAUT2\Dipterv\software\main_board\\main_board</ProjectName>
 <CMSIS>..\Drivers\CMSIS</CMSIS>
-<HAL_Driver>C:\Users\smate\STM32Cube\Repository\STM32Cube_FW_F4_V1.17.0\Drivers\CMSIS</HAL_Driver>
+<HAL_Driver>F:\Data\BME\ONLAB\cube\STM32Cube_FW_F4_V1.17.0\Drivers\CMSIS</HAL_Driver>
 
 <Toolchain>TrueSTUDIO</Toolchain>
 <Version>0</Version>

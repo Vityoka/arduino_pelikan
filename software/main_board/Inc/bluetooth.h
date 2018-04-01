@@ -20,11 +20,9 @@ void BluetoothSend(uint16_t size);
 void BluetoothReceive(void);
 void BluetoothFlushTX(void);
 void BluetoothFlushRX(void);
-void CommandParser(void);
+void CommandParser(uint8_t* rxbuf, uint16_t rx_index );
 void LoadBufferDebug(void);
-void LoadBuffer(void);
-void HMISend(uint16_t size);
-void HMIReceive(void);
+int LoadBuffer(uint8_t* targetbuf);
 void BluetoothResetCallback();
 
 UART_HandleTypeDef * BtUartHandle;

@@ -8,7 +8,12 @@
 #ifndef HMI_H_
 #define HMI_H_
 
-void HmiInit(void);
-void HmiGetMsg(void);
+#define HMI_BUFF_RX_SIZE 128
+#define HMI_BUFF_TX_SIZE 1024
+
+void HMISend(uint16_t size);
+void HMICommandParser(void);
+void HMIUartRxCallback();
+void HMIReceive(void);
 
 #endif /* HMI_H_ */

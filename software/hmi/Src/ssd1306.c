@@ -211,3 +211,15 @@ void ssd1306_WriteHeadline(char* str)
 		j++;
 	}
 }
+
+// Writing string function
+void ssd1306_WriteErrorMsg(char* str)
+{
+	ssd1306_SetCursor(0, 0);
+	while (*str)
+	{
+		ssd1306_WriteChar(*str, Font_7x10, White);
+		str++;
+	}
+	ssd1306_UpdateScreen();
+}

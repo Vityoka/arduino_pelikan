@@ -1,13 +1,17 @@
 #include "menu.h"
 #include "ssd1306.h"
+#include "register_map.h"
+#include "buttons.h"
+#include "string.h"
+#include "uartmain.h"
 
 const char *menus[] = {
-"StartStop",
+"Modes",
 "Debug",
-"Calibrate",
-"Battery",
+"LineSens",
+"Speed",
 "Distance",
-"Accelerat",
+"IMU",
 "Status"
 };
 
@@ -15,9 +19,20 @@ uint8_t MenuCurrent=0;
 uint8_t MenuSub=0;
 uint8_t MenuSubMax=0;
 
-
 uint8_t started=0;
 uint8_t BatteryUnit=0;
+
+int mystrlen(char* str){	//addig számol amig nemjön lezáró \n
+	int i = 0;
+	for(i = 0; str[i] != '\n'; i++);
+	return i+1;
+}
+
+
+void RefreshScreen()
+{
+	MenuDraw(MenuCurrent);
+}
 
 void MenuNext()
 {
@@ -49,6 +64,8 @@ void MenuDown()
 
 void MenuDraw(uint8_t MenuCurrent)
 {
+	char buf [50];
+
 	//Erase Previous Screen
 	ssd1306_Fill(Black);
 
@@ -58,16 +75,16 @@ void MenuDraw(uint8_t MenuCurrent)
 	//Draw submenus
 	switch(MenuCurrent)
 	{
-	case 0:	//"StartStop"
+	case 0:	//"Modes"
+		sprintf(buf, "Mode: %s" , str_mode );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("Start",Font_11x18,White);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "Ctrl: %s" , str_control );
 		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("Stop",Font_11x18,White);
-		ssd1306_SetCursor(0,47);
-		if(started)
-			ssd1306_WriteString("Now: Running",Font_11x16,White);
-		else
-			ssd1306_WriteString("Now: Stopped",Font_11x16,White);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "STOP" );
+		ssd1306_SetCursor(16,48);
+		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
 	case 1:	//"Debug"
@@ -82,55 +99,58 @@ void MenuDraw(uint8_t MenuCurrent)
 			ssd1306_WriteString("Debug OFF",Font_11x16,White);
 		break;
 
-	case 2:	//"Calibrate"
+	case 2:	//"LineSens"
+		sprintf(buf, "LinePos  LineNum" );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("Set Dark",Font_11x18,White);
-		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("Set Light",Font_11x18,White);
-		ssd1306_SetCursor(0,51);
-		ssd1306_WriteString("Calibration:",Font_7x10,White);
-		ssd1306_SetCursor(88,48);
-		if(started)
-			ssd1306_WriteString("OK",Font_11x16,White);
-		else
-			ssd1306_WriteString("ERR",Font_11x16,White);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "F: %2.1f , %d" , LinePos_controller, LineNumFront );
+		ssd1306_SetCursor(16,28);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "B: %2.1f , %d" , LinePositionBack, LineNumBack );
+		ssd1306_SetCursor(16,38);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "Angle: %2.1f deg" , Vonalszog_controller*180/3.1415 );
+		ssd1306_SetCursor(16,50);
+		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
-	case 3:	// "Battery"
-		if(BatteryUnit)
-		{
-			ssd1306_SetCursor(16,16);
-			ssd1306_WriteString("M: TODO",Font_11x18,White);
-			ssd1306_SetCursor(16,32);
-			ssd1306_WriteString("L: TODO",Font_11x18,White);
-		}
-		else
-		{
-			ssd1306_SetCursor(16,16);
-			ssd1306_WriteString("M: TODO",Font_11x18,White);
-			ssd1306_SetCursor(16,32);
-			ssd1306_WriteString("L: TODO",Font_11x18,White);
-		}
-		ssd1306_SetCursor(0,48);
-		ssd1306_WriteString("Set % or V",Font_11x16,White);
+	case 3:	// "Speed"
+		sprintf(buf, "Speed: %2.1f" , Speed );
+		ssd1306_SetCursor(16,16);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "Uthossz: %2.1f" , Uthossz );
+		ssd1306_SetCursor(16,32);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "SpeedSP: %2.1f" , SpeedSP );
+		ssd1306_SetCursor(16,48);
+		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
 	case 4:	//"Distance"
+		sprintf(buf, "F: %2.1f" , DistanceFront );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("F: TODO",Font_11x18,White);
+		ssd1306_WriteString(buf,Font_11x18,White);
+		sprintf(buf, "L: %2.1f" , DistanceLeft );
 		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("L: TODO",Font_11x18,White);
+		ssd1306_WriteString(buf,Font_11x18,White);
+		sprintf(buf, "R: %2.1f" , DistanceRight );
 		ssd1306_SetCursor(16,48);
-		ssd1306_WriteString("R: TODO",Font_11x16,White);
+		ssd1306_WriteString(buf,Font_11x16,White);
 		break;
 
-	case 5:	//"Accelerat"
+	case 5:	//"IMU"
+		sprintf(buf, "Accel    Gyro" );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("X: TODO",Font_11x18,White);
-		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("Y: TODO",Font_11x18,White);
-		ssd1306_SetCursor(16,48);
-		ssd1306_WriteString("Z: TODO",Font_11x16,White);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "X: %2.1f , %2.1f" , LinearX, AngularX );
+		ssd1306_SetCursor(16,28);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "Y: %2.1f , %2.1f" , LinearY, AngularY );
+		ssd1306_SetCursor(16,38);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "Z: %2.1f , %2.1f" , LinearZ, AngularZ );
+		ssd1306_SetCursor(16,50);
+		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
 	case 6:	//"Status"
@@ -144,3 +164,67 @@ void MenuDraw(uint8_t MenuCurrent)
 	}
 	ssd1306_UpdateScreen();
 }
+
+void MenuLogic(uint8_t Menupont)
+{
+	// Command formátuma a MainBoard felé:
+	// Elsõ 4 bájt az üzenet hossza bájtban.
+	// Ezután egy darab karakter ami a commandot határozza meg. Mainboard oldalán van definiálva
+	// Ezután az adott commandhoz szükséges extra infok küldése
+	uint8_t cmd [10];
+	uint8_t temp;
+	switch(MenuCurrent)
+	{
+	case 0:		//"StartStop"
+		if(Menupont == 1)
+		{
+			temp = Mode;
+			if (temp == 1)
+			{
+				uint8_t tempcmd [] =  "\0\0\0\5Y\n";
+				memcpy(cmd , tempcmd , sizeof(tempcmd));
+				temp = 0;
+			}
+			else if(temp == 0)
+			{
+				uint8_t tempcmd [] =  "\0\0\0\5U\n";
+				memcpy(cmd , tempcmd , sizeof(tempcmd));
+				temp = 1;
+			}
+		}
+		else if(Menupont == 2)
+		{
+			temp = Running;
+			if( Running >= 5)
+				temp = 1;
+			else
+				temp++;
+			uint8_t tempcmd [] =  "\0\0\0\6G\0\n";
+			memcpy(cmd , tempcmd, sizeof(tempcmd));
+			cmd[5] = temp;
+		}
+		else if(Menupont == 3)
+		{
+			uint8_t tempcmd [] =  "\0\0\0\5S\n";
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+		}
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		break;
+	case 5:
+		break;
+	}
+	uart_send(cmd , mystrlen(cmd) );
+	memset(cmd, 0, sizeof(cmd));
+}
+
+
+
+
+

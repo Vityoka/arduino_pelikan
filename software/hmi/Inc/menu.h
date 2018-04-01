@@ -11,6 +11,7 @@ void MenuPrev(void);
 
 //Visualize Current Menu
 void MenuDraw(uint8_t MenuCurrent);
+void RefreshScreen();
 
 
 #endif /* MENU_H_ */

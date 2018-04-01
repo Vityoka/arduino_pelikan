@@ -45,6 +45,10 @@
 #include "ssd1306.h"
 #include "MAX7219.h"
 #include "menu.h"
+#include "uartmain.h"
+#include "register_map.h"
+#include "buttons.h"
+
 
 #include <string.h>
 /* USER CODE END Includes */
@@ -62,22 +66,6 @@ TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
-#define MAX_CHECKS 10			// # checks before a button is debounced
-
-//[x | MENU_UP | MENU_DOWN | MENU_LEFT | MENU_RIGHT | MENU_1 | MENU_2 | MENU_3]
-#define MENU_UP		0b01000000
-#define MENU_DOWN	0b00100000
-#define MENU_LEFT	0b00010000
-#define MENU_RIGHT	0b00001000
-#define MENU_1		0b00000100
-#define MENU_2		0b00000010
-#define MENU_3		0b00000001
-
-uint8_t ButtonsDebounced;		// Debounced state of the buttons
-uint8_t ButtonsPressed;			// Rising edge for user input
-uint8_t ButtonsRaw[MAX_CHECKS];	// Array that maintains bounce status
-uint8_t Index = 0;				// Current Index of Buttons array
 
 /* USER CODE END PV */
 
@@ -93,7 +81,6 @@ static void MX_SPI2_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void DebounceButtons(void);	//Read inputs and debounce buttons
 
 /* USER CODE END PFP */
 
@@ -102,38 +89,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
    if (htim->Instance==TIM6)
       {
-	   DebounceButtons();
+	   	   DebounceButtons();
       }
 }
 
-//Read inputs and debounce buttons
-void DebounceButtons()
-{
-	//Local variables
-    uint8_t i, temp;
 
-    //Read button inputs
-    ButtonsRaw[Index] = 0x00;
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_UP_GPIO_Port, MENU_UP_Pin) << 6);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_DOWN_GPIO_Port, MENU_DOWN_Pin) << 5);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_LEFT_GPIO_Port, MENU_LEFT_Pin) << 4);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_RIGHT_GPIO_Port, MENU_RIGHT_Pin) << 3);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_1_GPIO_Port, MENU_1_Pin) << 2);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_2_GPIO_Port, MENU_2_Pin) << 1);
-    ButtonsRaw[Index] |= (HAL_GPIO_ReadPin(MENU_3_GPIO_Port, MENU_3_Pin) << 0);
-
-    //Increment index
-    ++Index;
-    if(Index>=MAX_CHECKS)
-    	Index=0;
-
-    //Debounce magic
-    temp=0xff;
-    for (i=0; i<MAX_CHECKS-1;i++)
-    	temp=temp & ButtonsRaw[i];
-    ButtonsPressed |= ((~ButtonsDebounced) & temp);
-    ButtonsDebounced = temp;
-}
 /* USER CODE END 0 */
 
 int main(void)
@@ -180,26 +140,28 @@ int main(void)
   MenuDraw(0);
   ssd1306_UpdateScreen();
 
+  //init global variables
+  InitRegisters();
+
+  //init uart
+  uart_startReceiving();
+
   //Initialize LED matrices
-  InitMAX7219();
+  //InitMAX7219();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
+	  ButtonHandler();
 
-	  if(ButtonsPressed & MENU_UP)
-		  MenuUp();
-	  if(ButtonsPressed & MENU_DOWN)
-		  MenuDown();
-	  if(ButtonsPressed & MENU_LEFT)
-		  MenuPrev();
-	  if(ButtonsPressed & MENU_RIGHT)
-		  MenuNext();
+	  char buf [6];
+	  sprintf(buf, "%ld", Timestamp);
+	  //ssd1306_WriteErrorMsg(buf);
 
-	  ButtonsPressed=0x00;
 	  HAL_Delay(100);
 
   /* USER CODE END WHILE */

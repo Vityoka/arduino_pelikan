@@ -10,9 +10,12 @@
 #include "string.h"
 #include "controller.h"
 #include "main.h"
+#include "hmi.h"
+#include "starter.h"
 
 extern UART_HandleTypeDef huart1;
-uint8_t hmi_rx_index = 0;
+extern UART_HandleTypeDef huart4;
+extern volatile uint8_t hmi_buffer_tx[HMI_BUFF_TX_SIZE];
 
 void BTCommunicationTask(void const * argument)
 {
@@ -35,7 +38,8 @@ void BTCommunicationTask(void const * argument)
 		}
 		else if(BT_CONNECTED == 0xFF)	//BT serial port connected
 		{
-			CommandParser();
+			CommandParser(bt_buffer_rx , rx_pointer);
+			BluetoothFlushRX();
 			Timestamp++;
 			TimeBetweenData = HAL_GetTick() - TimeElapsedFromStart;
 			TimeElapsedFromStart = HAL_GetTick();
@@ -45,7 +49,8 @@ void BTCommunicationTask(void const * argument)
 			}
 			else
 			{
-				LoadBuffer();
+				int size = LoadBuffer(bt_buffer_tx);
+				BluetoothSend(size);
 			}
 
 		}
@@ -53,7 +58,7 @@ void BTCommunicationTask(void const * argument)
 		{
 
 		}
-		osDelay(50);
+		osDelay(100);
 	}
 	osThreadTerminate(NULL);
 }
@@ -107,25 +112,25 @@ void BluetoothFlushRX(void)
 	return;
 }
 
-void CommandParser(void)
+void CommandParser(uint8_t* rxbuf , uint16_t rx_index )
 {
-	if(bt_buffer_rx[4] != 0)
+	if(rxbuf[4] != 0)
 	{
 		uint32_t commandSize = 0;
-		commandSize |= (bt_buffer_rx[0] << 24);
-		commandSize |= (bt_buffer_rx[1] << 16);
-		commandSize |= (bt_buffer_rx[2] << 8);
-		commandSize |= bt_buffer_rx[3];
-		if( rx_pointer < commandSize)
+		commandSize |= (rxbuf[0] << 24);
+		commandSize |= (rxbuf[1] << 16);
+		commandSize |= (rxbuf[2] << 8);
+		commandSize |= rxbuf[3];
+		if( rx_index < commandSize)
 		{
 			return;
 		}
 		else
 		{
-			switch(bt_buffer_rx[4])
+			switch(rxbuf[4])
 			{
 				case 'G':	// run
-					Running = bt_buffer_rx[5];
+					Running = rxbuf[5];
 					break;
 				case 'S':	// stop
 					Running = RUN_STOP;
@@ -141,25 +146,25 @@ void CommandParser(void)
 					break;
 				case 'V':	//speed setpoint
 					SpeedSP = 0;
-					memcpy(&SpeedSP, (bt_buffer_rx + 5), 4);
+					memcpy(&SpeedSP, (rxbuf + 5), 4);
 					break;
 				case 'T':	//timestamp
 					Timestamp = 0;
-					Timestamp |= bt_buffer_rx[5];
+					Timestamp |= rxbuf[5];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[6];
+					Timestamp |= rxbuf[6];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[7];
+					Timestamp |= rxbuf[7];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[8];
+					Timestamp |= rxbuf[8];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[9];
+					Timestamp |= rxbuf[9];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[10];
+					Timestamp |= rxbuf[10];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[11];
+					Timestamp |= rxbuf[11];
 					Timestamp <<= 8;
-					Timestamp |= bt_buffer_rx[12];
+					Timestamp |= rxbuf[12];
 					break;
 				case 'L':	//calibrate light
 					CalibRequestState = 1;
@@ -168,102 +173,100 @@ void CommandParser(void)
 					break;
 				case '1':	//Kp
 					Kp = 0;
-					memcpy(&Kp, (bt_buffer_rx + 5), 4);
+					memcpy(&Kp, (rxbuf + 5), 4);
 					break;
 				case '2':	//Ki
 					Ki = 0;
-					memcpy(&Ki, (bt_buffer_rx + 5), 4);
+					memcpy(&Ki, (rxbuf + 5), 4);
 					break;
 				case '3':	//Kd
 					Kd = 0;
-					memcpy(&Kd, (bt_buffer_rx + 5), 4);
+					memcpy(&Kd, (rxbuf + 5), 4);
 					break;
 				case 'q':	//KpGyors
 					KpGyors = 0;
-					memcpy(&KpGyors, (bt_buffer_rx + 5), 4);
+					memcpy(&KpGyors, (rxbuf + 5), 4);
 					break;
 				case 'w':	//KdGyors
 					KdGyors = 0;
-					memcpy(&KdGyors, (bt_buffer_rx + 5), 4);
+					memcpy(&KdGyors, (rxbuf + 5), 4);
 					break;
 				case 'e':	//KpKanyar
 					KpKanyar = 0;
-					memcpy(&KpKanyar, (bt_buffer_rx + 5), 4);
+					memcpy(&KpKanyar, (rxbuf + 5), 4);
 					break;
 				case 'r':	//KdKanyar
 					KdKanyar = 0;
-					memcpy(&KdKanyar, (bt_buffer_rx + 5), 4);
+					memcpy(&KdKanyar, (rxbuf + 5), 4);
 					break;
 				case 'X':	//selftest
 					SELFTEST = 0xFF;
 					break;
 				case 'U':	//ügyességi mód
-					Mode = UGYESSEGI;
-					 SetTasks();
+					if( Mode != UGYESSEGI )
+						Mode = UGYESSEGI;
+					//SetTasks();
 					break;
 				case 'Y':	//gyorsasági mód
-					Mode = GYORSASAGI;
-					 SetTasks();
+					if( Mode != GYORSASAGI)
+						Mode = GYORSASAGI;
+					//SetTasks();
 					break;
 				case 'l':	//TclMotor
 					TclMotor = 0;
-					TclMotor |= (bt_buffer_rx[5] << 8);
-					TclMotor |= bt_buffer_rx[6];
+					TclMotor |= (rxbuf[5] << 8);
+					TclMotor |= rxbuf[6];
 					break;
 				case 'u':	//uthossz nullazasa
 					Uthossz = 0;
 					break;
 				case 'y':	//ugyessegi állapotgép
-					UgyessegiState = bt_buffer_rx[5];
+					UgyessegiState = rxbuf[5];
 					break;
 				case 'g':	//gyorsasági állapotgép
-					GyorsasagiState = bt_buffer_rx[5];
+					GyorsasagiState = rxbuf[5];
 					break;
 				case 'k':	//kszi
 					kszi = 0;
-					memcpy(&kszi, (bt_buffer_rx + 5), 4);
+					memcpy(&kszi, (rxbuf + 5), 4);
 					break;
 				case '*':	//D5Mul
 					D5Mul = 0;
-					memcpy(&D5Mul, (bt_buffer_rx + 5), 4);
+					memcpy(&D5Mul, (rxbuf + 5), 4);
 					break;
 				case '+':	//D5Add
 					D5Add = 0;
-					memcpy(&D5Add, (bt_buffer_rx + 5), 4);
+					memcpy(&D5Add, (rxbuf + 5), 4);
 					break;
 				case 's':	//ServoPos
 					ServoPos = 0;
-					memcpy(&ServoPos, (bt_buffer_rx + 5), 4);
+					memcpy(&ServoPos, (rxbuf + 5), 4);
 					break;
 				case 'o':	//OutputDivisor
 					OutputDivisor = 0;
-					memcpy(&OutputDivisor, (bt_buffer_rx + 5), 4);
+					memcpy(&OutputDivisor, (rxbuf + 5), 4);
 					break;
 				case 'p':	//KpWeight
 					KpWeight = 0;
-					memcpy(&KpWeight, (bt_buffer_rx + 5), 4);
+					memcpy(&KpWeight, (rxbuf + 5), 4);
 					break;
 				case 'd':	//KdeltaWeight
 					KdeltaWeight = 0;
-					memcpy(&KdeltaWeight, (bt_buffer_rx + 5), 4);
+					memcpy(&KdeltaWeight, (rxbuf + 5), 4);
 					break;
 				case '6':	//SpeedSPGyors
 					SpeedSPGyors = 0;
-					memcpy(&SpeedSPGyors, (bt_buffer_rx + 5), 4);
+					memcpy(&SpeedSPGyors, (rxbuf + 5), 4);
 					break;
 				case '7':	//SpeedSPKanyar
 					SpeedSPKanyar = 0;
-					memcpy(&SpeedSPKanyar, (bt_buffer_rx + 5), 4);
+					memcpy(&SpeedSPKanyar, (rxbuf + 5), 4);
 					break;
-
-
-
-
 
 				default:
 					return;
 			}
-			BluetoothFlushRX();
+
 		}
 	}
 	return;
@@ -273,8 +276,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if( huart->Instance == UART4 )
 	{
-		HAL_UART_Receive_IT(&huart4, &hmi_buffer_rx[hmi_rx_index], 1 );
-		hmi_rx_index++;
+		HMIUartRxCallback();
 	}
 	else if( huart->Instance == USART1 )
 	{
@@ -290,199 +292,119 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 }
-/*
-void LoadBufferDebug(void)
+
+int LoadBuffer(uint8_t* targetbuf)
 {
+	char buf [200];
 	uint16_t ptr = 0;
 	uint32_t size = 0;
-	memcpy( bt_buffer_tx + ptr, &size, sizeof(size) );
+	memcpy( buf + ptr, &size, sizeof(size) );
 	ptr += sizeof(size);
-	memcpy( bt_buffer_tx + ptr, &DebugMode,sizeof(DebugMode) );
+	memcpy( buf + ptr, &DebugMode, sizeof(DebugMode) );
 	ptr += sizeof(DebugMode);
-	memcpy( bt_buffer_tx + ptr, &Running,sizeof(Running) );
+	memcpy( buf + ptr, &Running, sizeof(Running) );
 	ptr += sizeof(Running);
-	memcpy( bt_buffer_tx + ptr, &Timestamp,sizeof(Timestamp) );
-	ptr += sizeof(Timestamp);
-
-	memcpy( bt_buffer_tx + ptr, &LinePositionFront, sizeof(LinePositionFront) );
-	ptr += sizeof(LinePositionFront);
-	memcpy( bt_buffer_tx + ptr, &LinePositionBack,sizeof(LinePositionBack) );
-	ptr += sizeof(LinePositionBack);
-	memcpy( bt_buffer_tx + ptr, &LineAngle,sizeof(LineAngle) );
-	ptr += sizeof(LineAngle);
-	memcpy( bt_buffer_tx + ptr, &LineNumFront,sizeof(LineNumFront) );
-	ptr += sizeof(LineNumFront);
-	memcpy( bt_buffer_tx + ptr, &LineNumBack,sizeof(LineNumBack) );
-	ptr += sizeof(LineNumBack);
-	memcpy( bt_buffer_tx + ptr, &LinearX,sizeof(LinearX) );
-	ptr += sizeof(LinearX);
-	memcpy( bt_buffer_tx + ptr, &LinearY,sizeof(LinearY) );
-	ptr += sizeof(LinearY);
-	memcpy( bt_buffer_tx + ptr, &LinearZ,sizeof(LinearZ) );
-	ptr += sizeof(LinearZ);
-	memcpy( bt_buffer_tx + ptr, &AngularX,sizeof(AngularX) );
-	ptr += sizeof(AngularX);
-	memcpy( bt_buffer_tx + ptr, &AngularY,sizeof(AngularY) );
-	ptr += sizeof(AngularY);
-	memcpy( bt_buffer_tx + ptr, &AngularZ,sizeof(AngularZ) );
-	ptr += sizeof(AngularZ);
-	memcpy( bt_buffer_tx + ptr, &DistanceFront,sizeof(DistanceFront) );
-	ptr += sizeof(DistanceFront);
-	memcpy( bt_buffer_tx + ptr, &DistanceLeft,sizeof(DistanceLeft) );
-	ptr += sizeof(DistanceLeft);
-	memcpy( bt_buffer_tx + ptr, &DistanceRight,sizeof(DistanceRight) );
-	ptr += sizeof(DistanceRight);
-	memcpy( bt_buffer_tx + ptr, &Speed,sizeof(Speed) );
-	ptr += sizeof(Speed);
-	memcpy( bt_buffer_tx + ptr, &SpeedSP,sizeof(SpeedSP) );
-	ptr += sizeof(SpeedSP);
-
-
-	memcpy( bt_buffer_tx + ptr, &MotorCurrent,sizeof(MotorCurrent) );
-	ptr += sizeof(MotorCurrent);
-	memcpy( bt_buffer_tx + ptr, &BatteryMotor,sizeof(BatteryMotor) );
-	ptr += sizeof(BatteryMotor);
-	memcpy( bt_buffer_tx + ptr, &BatteryLogic,sizeof(BatteryLogic) );
-	ptr += sizeof(BatteryLogic);
-	memcpy( bt_buffer_tx + ptr, &ServoPos,sizeof(ServoPos) );
-	ptr += sizeof(ServoPos);
-
-	memcpy( bt_buffer_tx + ptr, &Kp,sizeof(Kp) );
-	ptr += sizeof(Kp);
-	memcpy( bt_buffer_tx + ptr, &Ki,sizeof(Ki) );
-	ptr += sizeof(Ki);
-	memcpy( bt_buffer_tx + ptr, &Kd,sizeof(Kd) );
-	ptr += sizeof(Kd);
-
-	memcpy( bt_buffer_tx + ptr, LineInfra, 128 );
-	ptr += 128;
-	size = ptr;
-	memcpy( bt_buffer_tx, &size, sizeof(size) );
-	BluetoothSend(size);
-	return;
-}
-*/
-
-void LoadBuffer(void)
-{
-	uint16_t ptr = 0;
-	uint32_t size = 0;
-	memcpy( bt_buffer_tx + ptr, &size, sizeof(size) );
-	ptr += sizeof(size);
-	memcpy( bt_buffer_tx + ptr, &DebugMode, sizeof(DebugMode) );
-	ptr += sizeof(DebugMode);
-	memcpy( bt_buffer_tx + ptr, &Running, sizeof(Running) );
-	ptr += sizeof(Running);
-	memcpy( bt_buffer_tx + ptr, &Mode, sizeof(Mode) );
+	memcpy( buf + ptr, &Mode, sizeof(Mode) );
 	ptr += sizeof(Mode);
-	memcpy( bt_buffer_tx + ptr, &GyorsasagiState, sizeof(GyorsasagiState) );
+	memcpy( buf + ptr, &GyorsasagiState, sizeof(GyorsasagiState) );
 	ptr += sizeof(GyorsasagiState);
-	memcpy( bt_buffer_tx + ptr, &UgyessegiState, sizeof(UgyessegiState) );
+	memcpy( buf + ptr, &UgyessegiState, sizeof(UgyessegiState) );
 	ptr += sizeof(UgyessegiState);
-	memcpy( bt_buffer_tx + ptr, &Timestamp, sizeof(Timestamp) );
+	memcpy( buf + ptr, &Timestamp, sizeof(Timestamp) );
 	ptr += sizeof(Timestamp);
-	memcpy( bt_buffer_tx + ptr, &TimeBetweenData,sizeof(TimeBetweenData) );
+	memcpy( buf + ptr, &TimeBetweenData,sizeof(TimeBetweenData) );
 	ptr += sizeof(TimeBetweenData);
-	memcpy( bt_buffer_tx + ptr, &LinePos_controller, sizeof(LinePos_controller) );
+	memcpy( buf + ptr, &LinePos_controller, sizeof(LinePos_controller) );
 	ptr += sizeof(LinePos_controller);
-	memcpy( bt_buffer_tx + ptr, &LinePositionBack, sizeof(LinePositionBack) );
+	memcpy( buf + ptr, &LinePositionBack, sizeof(LinePositionBack) );
 	ptr += sizeof(LinePositionBack);
-	memcpy( bt_buffer_tx + ptr, &Vonalszog_controller, sizeof(Vonalszog_controller) );
+	memcpy( buf + ptr, &Vonalszog_controller, sizeof(Vonalszog_controller) );
 	ptr += sizeof(Vonalszog_controller);
-	memcpy( bt_buffer_tx + ptr, &LineNumFront, sizeof(LineNumFront) );
+	memcpy( buf + ptr, &LineNumFront, sizeof(LineNumFront) );
 	ptr += sizeof(LineNumFront);
-	memcpy( bt_buffer_tx + ptr, &LineNumBack, sizeof(LineNumBack) );
+	memcpy( buf + ptr, &LineNumBack, sizeof(LineNumBack) );
 	ptr += sizeof(LineNumBack);
-	memcpy( bt_buffer_tx + ptr, &LinearX, sizeof(LinearX) );
+	memcpy( buf + ptr, &LinearX, sizeof(LinearX) );
 	ptr += sizeof(LinearX);
-	memcpy( bt_buffer_tx + ptr, &LinearY, sizeof(LinearY) );
+	memcpy( buf + ptr, &LinearY, sizeof(LinearY) );
 	ptr += sizeof(LinearY);
-	memcpy( bt_buffer_tx + ptr, &LinearZ, sizeof(LinearZ) );
+	memcpy( buf + ptr, &LinearZ, sizeof(LinearZ) );
 	ptr += sizeof(LinearZ);
-	memcpy( bt_buffer_tx + ptr, &AngularX, sizeof(AngularX) );
+	memcpy( buf + ptr, &AngularX, sizeof(AngularX) );
 	ptr += sizeof(AngularX);
-	memcpy( bt_buffer_tx + ptr, &AngularY, sizeof(AngularY) );
+	memcpy( buf + ptr, &AngularY, sizeof(AngularY) );
 	ptr += sizeof(AngularY);
-	memcpy( bt_buffer_tx + ptr, &AngularZ, sizeof(AngularZ) );
+	memcpy( buf + ptr, &AngularZ, sizeof(AngularZ) );
 	ptr += sizeof(AngularZ);
-	memcpy( bt_buffer_tx + ptr, &DistanceFront, sizeof(DistanceFront) );
+	memcpy( buf + ptr, &DistanceFront, sizeof(DistanceFront) );
 	ptr += sizeof(DistanceFront);
-	memcpy( bt_buffer_tx + ptr, &DistanceLeft, sizeof(DistanceLeft) );
+	memcpy( buf + ptr, &DistanceLeft, sizeof(DistanceLeft) );
 	ptr += sizeof(DistanceLeft);
-	memcpy( bt_buffer_tx + ptr, &DistanceRight, sizeof(DistanceRight) );
+	memcpy( buf + ptr, &DistanceRight, sizeof(DistanceRight) );
 	ptr += sizeof(DistanceRight);
-	memcpy( bt_buffer_tx + ptr, &Speed, sizeof(Speed) );
+	memcpy( buf + ptr, &Speed, sizeof(Speed) );
 	ptr += sizeof(Speed);
-	memcpy( bt_buffer_tx + ptr, &Uthossz, sizeof(Uthossz) );
+	memcpy( buf + ptr, &Uthossz, sizeof(Uthossz) );
 	ptr += sizeof(Uthossz);
-	memcpy( bt_buffer_tx + ptr, &MotorCurrent, sizeof(MotorCurrent) );
+	memcpy( buf + ptr, &MotorCurrent, sizeof(MotorCurrent) );
 	ptr += sizeof(MotorCurrent);
-	memcpy( bt_buffer_tx + ptr, &SpeedSP, sizeof(SpeedSP) );
+	memcpy( buf + ptr, &SpeedSP, sizeof(SpeedSP) );
 	ptr += sizeof(SpeedSP);
-	memcpy( bt_buffer_tx + ptr, &TclMotor, sizeof(TclMotor) );
+	memcpy( buf + ptr, &TclMotor, sizeof(TclMotor) );
 	ptr += sizeof(TclMotor);
-	memcpy( bt_buffer_tx + ptr, &SpeedSPGyors, sizeof(SpeedSPGyors) );
+	memcpy( buf + ptr, &SpeedSPGyors, sizeof(SpeedSPGyors) );
 	ptr += sizeof(SpeedSPGyors);
-	memcpy( bt_buffer_tx + ptr, &SpeedSPKanyar, sizeof(SpeedSPKanyar) );
+	memcpy( buf + ptr, &SpeedSPKanyar, sizeof(SpeedSPKanyar) );
 	ptr += sizeof(SpeedSPKanyar);
 
-	memcpy( bt_buffer_tx + ptr, &KpGyors,sizeof(KpGyors) );
+	memcpy( buf + ptr, &KpGyors,sizeof(KpGyors) );
 	ptr += sizeof(KpGyors);
-	memcpy( bt_buffer_tx + ptr, &KpKanyar,sizeof(KpKanyar) );
+	memcpy( buf + ptr, &KpKanyar,sizeof(KpKanyar) );
 	ptr += sizeof(KpKanyar);
 
-	memcpy( bt_buffer_tx + ptr, &KdGyors,sizeof(KdGyors) );
+	memcpy( buf + ptr, &KdGyors,sizeof(KdGyors) );
 	ptr += sizeof(KdGyors);
-	memcpy( bt_buffer_tx + ptr, &KdKanyar,sizeof(KdKanyar) );
+	memcpy( buf + ptr, &KdKanyar,sizeof(KdKanyar) );
 	ptr += sizeof(KdKanyar);
 
-	memcpy( bt_buffer_tx + ptr, &BatteryMotor, sizeof(BatteryMotor) );
+	memcpy( buf + ptr, &BatteryMotor, sizeof(BatteryMotor) );
 	ptr += sizeof(BatteryMotor);
-	memcpy( bt_buffer_tx + ptr, &BatteryLogic, sizeof(BatteryLogic) );
+	memcpy( buf + ptr, &BatteryLogic, sizeof(BatteryLogic) );
 	ptr += sizeof(BatteryLogic);
 
-	memcpy( bt_buffer_tx + ptr, &ServoPos, sizeof(ServoPos) );
+	memcpy( buf + ptr, &ServoPos, sizeof(ServoPos) );
 	ptr += sizeof(ServoPos);
 
-	memcpy( bt_buffer_tx + ptr, &Kp,sizeof(Kp) );
+	memcpy( buf + ptr, &Kp,sizeof(Kp) );
 	ptr += sizeof(Kp);
-	memcpy( bt_buffer_tx + ptr, &Ki,sizeof(Ki) );
+	memcpy( buf + ptr, &Ki,sizeof(Ki) );
 	ptr += sizeof(Ki);
-	memcpy( bt_buffer_tx + ptr, &Kd,sizeof(Kd) );
+	memcpy( buf + ptr, &Kd,sizeof(Kd) );
 	ptr += sizeof(Kd);
-	memcpy( bt_buffer_tx + ptr, &kszi,sizeof(kszi) );
+	memcpy( buf + ptr, &kszi,sizeof(kszi) );
 	ptr += sizeof(kszi);
-	memcpy( bt_buffer_tx + ptr, &OutputDivisor,sizeof(OutputDivisor) );
+	memcpy( buf + ptr, &OutputDivisor,sizeof(OutputDivisor) );
 	ptr += sizeof(OutputDivisor);
-	memcpy( bt_buffer_tx + ptr, &D5percent,sizeof(D5percent) );
+	memcpy( buf + ptr, &D5percent,sizeof(D5percent) );
 	ptr += sizeof(D5percent);
-	memcpy( bt_buffer_tx + ptr, &D5Add,sizeof(D5Add) );
+	memcpy( buf + ptr, &D5Add,sizeof(D5Add) );
 	ptr += sizeof(D5Add);
-	memcpy( bt_buffer_tx + ptr, &D5Mul,sizeof(D5Mul) );
+	memcpy( buf + ptr, &D5Mul,sizeof(D5Mul) );
 	ptr += sizeof(D5Mul);
-	memcpy( bt_buffer_tx + ptr, &KpWeight,sizeof(KpWeight) );
+	memcpy( buf + ptr, &KpWeight,sizeof(KpWeight) );
 	ptr += sizeof(KpWeight);
-	memcpy( bt_buffer_tx + ptr, &KdeltaWeight,sizeof(KdeltaWeight) );
+	memcpy( buf + ptr, &KdeltaWeight,sizeof(KdeltaWeight) );
 	ptr += sizeof(KdeltaWeight);
 
-	memcpy( bt_buffer_tx + ptr, &KorforgalomData ,sizeof(KorforgalomData) );
+	memcpy( buf + ptr, &KorforgalomData ,sizeof(KorforgalomData) );
 	ptr += sizeof(KorforgalomData);
-
 	size = ptr;
-	memcpy( bt_buffer_tx, &size, sizeof(size) );
-	BluetoothSend(size);
-	return;
+
+	memcpy( buf, &size, sizeof(size) );
+
+	memcpy( targetbuf, buf, sizeof(buf) );
+
+	return size;
 }
 
-void HMISend(uint16_t size)
-{
-	HAL_UART_Transmit_DMA(&huart4, hmi_buffer_tx, size);
-	return;
-}
 
-void HMIReceive(void)
-{
-	hmi_rx_index = 0;
-	HAL_UART_Receive_IT(&huart4, &hmi_buffer_rx[hmi_rx_index], 1 );
-	return;
-}

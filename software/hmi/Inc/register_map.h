@@ -8,39 +8,60 @@
 #ifndef REGISTER_MAP_H_
 #define REGISTER_MAP_H_
 
-#include "stm32f4xx_hal.h"
-#include "cmsis_os.h"
-#include "remotecontrol.h"
-#include "ir.h"
+#include "inttypes.h"
 
 //DEFINES
 #define GYORSASAGI 0
 #define UGYESSEGI 1
+#define RUN_STOP			1	//kocsi megáll
+#define RUN_FULL_AUTO				2	//kocsi gyorsulási módban,szabályzó futtatja
+#define RUN_FULL_MANUAL			3	//kocsi a távirányítóval irányítható
+#define RUN_MANUAL_THROTTLE		4	//gázt a távirányítóval adhatunk, de a kanyarodást a szabályzó végzi
+#define RUN_MANUAL_STEERING	5	//gázt az alkalmazással adhatunk, de a kanyarodást a távirányító végzi
 
-
-#define BT_BUFF_RX_SIZE 128
-#define BT_BUFF_TX_SIZE 1024
-#define LINE_BUFF_RX_SIZE 128
-#define LINE_BUFF_TX_SIZE 128
-#define MEMS_BUFF_RX_SIZE 128
-#define MEMS_BUFF_TX_SIZE 128
-
-volatile uint8_t BT_CONNECTED;
-
-volatile uint8_t bt_buffer_rx[BT_BUFF_RX_SIZE];
-volatile uint8_t bt_buffer_tx[BT_BUFF_TX_SIZE];
-volatile uint8_t line_buffer_rx[LINE_BUFF_RX_SIZE];
-volatile uint8_t line_buffer_tx[LINE_BUFF_TX_SIZE];
-volatile uint8_t IR_Data[14];
-
-volatile uint8_t bt_rx;
-volatile uint16_t rx_pointer;
-
+#define DETECT_OBSTACLE 0
+#define STARTKAPU 10
+#define STARTKAPU2 11
+#define STARTKAPU3 12
+#define DRONE 20
+#define DRONE2 21
+#define DRONE3 22
+#define DRONE4 23
+#define DRONE5 24
+#define DRONE6 25
+#define KORFORGALOM 30
+#define KORFORGALOM_BEHAJTAS 31
+#define KORFORGALOM_KORBEMENETEL 32
+#define KORFORGALOM_KIHAJTAS 33
+#define KORFORGALOM_VONALKERESES 34
+#define UTCASAROK 40
+#define UTCASAROK_ATHAJTAS_SZEMBE 41
+#define UTCASAROK_FALIRANY_DETECT 42
+#define UTCASAROK_BALFAL_ELORE 43
+#define UTCASAROK_JOBBFAL_ELORE 44
+#define UTCASAROK_TOLATAS 45
+#define UTCASAROK_UJRAELINDULAS 46
+#define UTCASAROK_VONALVARAS 47
+#define UTCASAROK_KIHAJTAS 48
+#define KONVOJ 50
+#define VASUTIATJARO 60
+#define VASUTIATJARO2 61
+#define VASUTIATJARO3 62
+#define VASUTIATJARO4 63
+#define VASUTIATJARO5 64
+#define VASUTIATJARO6 65
+#define VASUTIATJARO7 66
+#define VASUTIATJARO8 67
+#define VASUTIATJARO9 68
+#define FORGOHORDO 				70
+#define FORGOHORDO_RAMPA_FEL	71
+#define FORGOHORDO_HORDOBAN 	72
+#define FORGOHORDO_KI 			73
+#define CEL 80
+#define CEL2 81
 
 volatile float BatteryLogic;
 volatile float BatteryMotor;
-
-//
 volatile uint8_t DebugMode;
 volatile uint8_t Running;
 volatile uint8_t Mode;
@@ -92,21 +113,12 @@ volatile float KdKanyar;
 
 volatile float ServoPos;
 
-volatile uint16_t LineInfra[64];
-
 //Controller
 //PID
 volatile float Kp, Ki, Kd;
 
 volatile uint64_t temp_reverse;
 
-//FLAGS
-volatile uint8_t LineDataReady;
-volatile uint8_t LineDataWait;
-volatile uint8_t SELFTEST;
-volatile uint8_t DebugFirstRun;
-volatile uint8_t DebugState;
-volatile uint8_t CalibRequestState;
 
 
 //ugyessegi palya allapotgep
@@ -118,6 +130,12 @@ volatile uint8_t StarterReady;
 volatile uint8_t StarterBegin;
 volatile uint8_t DroneDetected;
 volatile uint8_t MovAvgFrontEnabled;
+
+//kijelzõn megjelenõ sztringek
+char str_mode [10];
+char str_control [10];
+char str_state_gyors [10];
+char str_state_ugyes [10];
 
 //functions
 

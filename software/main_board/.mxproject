@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=F:/Projects/RobonAUT/the_worst_arduino_project_ever/firmware/main_board/Inc
+HeaderPath=F:/Projects/RobonAUT2/Dipterv/software/main_board/Inc
 HeaderFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=F:/Projects/RobonAUT/the_worst_arduino_project_ever/firmware/main_board/Src
+SourcePath=F:/Projects/RobonAUT2/Dipterv/software/main_board/Src
 SourceFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;freertos.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;stm32f4xx_hal_timebase_TIM.c;main.c;
 
 [PreviousLibFiles]

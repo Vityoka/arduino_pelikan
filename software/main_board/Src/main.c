@@ -126,6 +126,7 @@ osThreadId ServoSetterTaskHandle;
 osThreadId LineDetectorTaskHandle;
 osThreadId RollAngleControllerTaskHandle;
 osThreadId CarTrackerTaskHandle;
+osThreadId HMITaskHandle;
 
 SemaphoreHandle_t Semaphore_linesensor_ready;
 SemaphoreHandle_t Semaphore_SPI_vonal_buffer;
@@ -185,7 +186,7 @@ void ServoSetterTask(void const * argument);
 void LineDetectorTask(void const * argument);
 void RollAngleControllerTask(void const * argument);
 void CarTrackerTask();
-
+void HMITask();
 
 
 /* USER CODE END PFP */
@@ -289,8 +290,8 @@ int main(void)
   osThreadDef(InfraReceiveTask, InfraReceiveTask, osPriorityBelowNormal, 0, 256);
   InfraReceiveTaskHandle = osThreadCreate(osThread(InfraReceiveTask), NULL);
 
-  osThreadDef(ReadMEMSTask, ReadMEMSTask, osPriorityNormal, 0, 512);
-  ReadMEMSTaskHandle = osThreadCreate(osThread(ReadMEMSTask), NULL);
+  //osThreadDef(ReadMEMSTask, ReadMEMSTask, osPriorityNormal, 0, 512);
+  //ReadMEMSTaskHandle = osThreadCreate(osThread(ReadMEMSTask), NULL);
 
   osThreadDef(StateMachineTask, StateMachineTask, osPriorityNormal, 0, 512);
   StateMachineTaskHandle = osThreadCreate(osThread(StateMachineTask), NULL);
@@ -316,6 +317,9 @@ int main(void)
   osThreadDef(CarTrackerTask, CarTrackerTask, osPriorityAboveNormal, 0, 128);
   CarTrackerTaskHandle = osThreadCreate(osThread(CarTrackerTask), NULL);
 
+  osThreadDef(HMITask, HMITask, osPriorityAboveNormal, 0, 128);
+  HMITaskHandle = osThreadCreate(osThread(HMITask), NULL);
+
 
   osThreadSuspend(ServoSetterTaskHandle);
   osThreadSuspend(LineDataTaskHandle );
@@ -336,6 +340,7 @@ int main(void)
   osThreadSuspend(LineDetectorTaskHandle);
   osThreadSuspend(RollAngleControllerTaskHandle);
   osThreadSuspend(CarTrackerTaskHandle);
+  osThreadSuspend(HMITaskHandle);
 
   InitTimers();
 
@@ -1184,7 +1189,7 @@ void SetTasks(){
 		osThreadResume(ReadDistanceSensorsTaskHandle);
 		osThreadResume(ReadMotorCurrentTaskHandle);
 		osThreadResume(InfraReceiveTaskHandle);
-		osThreadResume(ReadMEMSTaskHandle);
+		//osThreadResume(ReadMEMSTaskHandle);
 		osThreadResume(StateMachineTaskHandle);
 	}
 	else
@@ -1193,7 +1198,7 @@ void SetTasks(){
 		osThreadSuspend(ReadDistanceSensorsTaskHandle);
 		osThreadSuspend(ReadMotorCurrentTaskHandle);
 		osThreadSuspend(InfraReceiveTaskHandle);
-		osThreadSuspend(ReadMEMSTaskHandle);
+		//osThreadSuspend(ReadMEMSTaskHandle);
 		osThreadSuspend(StateMachineTaskHandle);
 	}
 
@@ -1235,7 +1240,7 @@ void InitTask(void const * argument)
 		osThreadResume(ReadDistanceSensorsTaskHandle);
 		osThreadResume(ReadMotorCurrentTaskHandle);
 		osThreadResume(InfraReceiveTaskHandle);
-		osThreadResume(ReadMEMSTaskHandle);
+		//osThreadResume(ReadMEMSTaskHandle);
 		osThreadResume(SpeedControllerTaskHandle);
 		osThreadResume(UthosszTaskHandle);
 		osThreadResume(SteeringStateSpaceControllerHandle);
@@ -1244,10 +1249,11 @@ void InitTask(void const * argument)
 		osThreadResume(StateMachineTaskHandle);
 		//osThreadResume(ControllerTaskHandle);
 		osThreadResume(CarTrackerTaskHandle);
+		osThreadResume(HMITaskHandle);
 		BluetoothReceive();
-		//HMIReceive();
+		HMIReceive();
 		StarterInit();
-		SetTasks();
+		//SetTasks();
 		osThreadTerminate(NULL);
 	}
 	osThreadTerminate(NULL);
@@ -1271,7 +1277,6 @@ void StartDefaultTask(void const * argument)
   osThreadTerminate(NULL);
   /* USER CODE END 5 */ 
 }
-
 
 /**
   * @brief  This function is executed in case of error occurrence.
