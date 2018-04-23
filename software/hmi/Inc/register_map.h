@@ -137,6 +137,11 @@ char str_control [10];
 char str_state_gyors [10];
 char str_state_ugyes [10];
 
+//RPi-tõl kapott változók
+volatile uint8_t rpi_rx_0;
+volatile uint8_t rpi_rx_1;
+
+
 //functions
 
 void InitRegisters(void);

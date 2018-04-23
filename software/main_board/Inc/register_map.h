@@ -12,6 +12,7 @@
 #include "cmsis_os.h"
 #include "remotecontrol.h"
 #include "ir.h"
+#include "rpi.h"
 
 //DEFINES
 #define GYORSASAGI 0
@@ -31,6 +32,7 @@ volatile uint8_t bt_buffer_rx[BT_BUFF_RX_SIZE];
 volatile uint8_t bt_buffer_tx[BT_BUFF_TX_SIZE];
 volatile uint8_t line_buffer_rx[LINE_BUFF_RX_SIZE];
 volatile uint8_t line_buffer_tx[LINE_BUFF_TX_SIZE];
+volatile uint8_t rpi_rx[SPI_RX_SIZE];
 volatile uint8_t IR_Data[14];
 
 volatile uint8_t bt_rx;

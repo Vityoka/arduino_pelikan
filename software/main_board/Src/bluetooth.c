@@ -398,6 +398,13 @@ int LoadBuffer(uint8_t* targetbuf)
 
 	memcpy( buf + ptr, &KorforgalomData ,sizeof(KorforgalomData) );
 	ptr += sizeof(KorforgalomData);
+
+	memcpy( buf + ptr, &rpi_rx[0] ,sizeof(rpi_rx[0]) );
+	ptr += sizeof(rpi_rx[0]);
+	memcpy( buf + ptr, &rpi_rx[1] ,sizeof(rpi_rx[1]) );
+	ptr += sizeof(rpi_rx[1]);
+
+
 	size = ptr;
 
 	memcpy( buf, &size, sizeof(size) );

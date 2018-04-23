@@ -252,7 +252,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi )
 {
 	if(hspi->Instance == SPI3)
 	{
-		HAL_GPIO_WritePin(MEMS_NSS_GPIO_Port, MEMS_NSS_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(Vonal_NSS_GPIO_Port, Vonal_NSS_Pin, GPIO_PIN_SET);
+
 		LineFlushTX();
 		LineSortData();
 		LineFlushRX();
@@ -264,7 +265,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi )
 	}
 	if(hspi->Instance == SPI2)
 	{
-		MemsTXRXCallback();
+		RPiSPICallback();
 	}
 }
 

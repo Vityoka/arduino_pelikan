@@ -105,6 +105,6 @@ extern SPI_HandleTypeDef hspi2;
 
 void MemsInit(void);			//initalize the MEMS sensor
 void ReadMEMSTask(void const * argument);		//calculates accelaration with Kalman filter
-void MemsTXRXCallback();
+void RPiSPICallback();
 
 #endif /* MEMS_H_ */

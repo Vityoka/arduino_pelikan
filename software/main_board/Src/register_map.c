@@ -51,13 +51,14 @@ void InitRegisters(void)
 	UthosszTarget = 0;
 
 	TclMotor = 200;
-	OutputDivisor = 1;
+
 	kszi = 1.1;
+	OutputDivisor = 1;
 	D5percent = 2;
-	D5Mul = 0.35;
 	D5Add = 0.1;
+	D5Mul = 0.35;
 	KpWeight = 1;
-	KdeltaWeight = 1;
+	KdeltaWeight = 44.44;
 
 	SpeedSP = 0;
 	SpeedSPGyors = 2;

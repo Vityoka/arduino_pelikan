@@ -7,12 +7,12 @@
 
 const char *menus[] = {
 "Modes",
-"Debug",
+"Ctrl",
 "LineSens",
 "Speed",
 "Distance",
 "IMU",
-"Status"
+"RPi"
 };
 
 uint8_t MenuCurrent=0;
@@ -87,16 +87,20 @@ void MenuDraw(uint8_t MenuCurrent)
 		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
-	case 1:	//"Debug"
+	case 1:	//"Ctrl"
+
+		sprintf(buf, "%2.2f,%2.2f" , OutputDivisor, D5percent );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("Turn ON",Font_11x18,White);
-		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("Turn OFF",Font_11x18,White);
-		ssd1306_SetCursor(0,48);
-		if(started)
-			ssd1306_WriteString("Debug ON",Font_11x16,White);
-		else
-			ssd1306_WriteString("Debug OFF",Font_11x16,White);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "%2.2f,%2.2f" , D5Add,D5Mul );
+		ssd1306_SetCursor(16,28);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "%2.2f,%2.2f" , KpWeight,KdeltaWeight);
+		ssd1306_SetCursor(16,38);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "%2.2f,%2.2f" , Kd ,kszi);
+		ssd1306_SetCursor(16,50);
+		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
 	case 2:	//"LineSens"
@@ -153,11 +157,13 @@ void MenuDraw(uint8_t MenuCurrent)
 		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 
-	case 6:	//"Status"
+	case 6:	//"Rpi"
+		sprintf(buf, "Rpi0: %d ", rpi_rx_0 );
 		ssd1306_SetCursor(16,16);
-		ssd1306_WriteString("TODO",Font_11x18,White);
+		ssd1306_WriteString(buf ,Font_11x18,White);
+		sprintf(buf, "Rpi1: %d ", rpi_rx_1 );
 		ssd1306_SetCursor(16,32);
-		ssd1306_WriteString("TODO",Font_11x18,White);
+		ssd1306_WriteString(buf ,Font_11x18,White);
 		ssd1306_SetCursor(16,48);
 		ssd1306_WriteString("TODO",Font_11x16,White);
 		break;

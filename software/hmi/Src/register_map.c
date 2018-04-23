@@ -80,6 +80,10 @@ void InitRegisters(void)
 	KorforgalomData = 0;
 	MovAvgFrontEnabled = 1;
 
+	//RPi-tõl kapott változók
+	rpi_rx_0 = 0;
+	rpi_rx_1 = 0;
+
 
 	return;
 }

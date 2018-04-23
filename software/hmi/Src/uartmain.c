@@ -14,7 +14,7 @@
 #include "menu.h"
 
 #define MAX_RX_BUF 500
-#define MSG_LENGTH 166
+#define MSG_LENGTH 168
 
 uint8_t Rx_buf [MAX_RX_BUF];
 
@@ -79,20 +79,23 @@ inline void process_uart_msg()		//beérkezõ parancsok feldolgozása
 	memcpy( &KpGyors, &Rx_buf[97] , sizeof(KpGyors));
 	memcpy( &KpKanyar, &Rx_buf[101] , sizeof(KpKanyar));
 	memcpy( &KdGyors, &Rx_buf[105] , sizeof(KdGyors));
-	memcpy( &BatteryMotor, &Rx_buf[109] , sizeof(BatteryMotor));
-	memcpy( &BatteryLogic, &Rx_buf[113] , sizeof(BatteryLogic));
-	memcpy( &ServoPos, &Rx_buf[117] , sizeof(ServoPos));
-	memcpy( &Kp, &Rx_buf[121] , sizeof(Kp));
-	memcpy( &Ki, &Rx_buf[125] , sizeof(Ki));
-	memcpy( &Kd, &Rx_buf[129] , sizeof(Kd));
-	memcpy( &kszi, &Rx_buf[133] , sizeof(kszi));
-	memcpy( &OutputDivisor, &Rx_buf[137] , sizeof(OutputDivisor));
-	memcpy( &D5percent, &Rx_buf[141] , sizeof(D5percent));
-	memcpy( &D5Add, &Rx_buf[145] , sizeof(D5Add));
-	memcpy( &D5Mul, &Rx_buf[149] , sizeof(D5Mul));
-	memcpy( &KpWeight, &Rx_buf[153] , sizeof(KpWeight));
-	memcpy( &KdeltaWeight, &Rx_buf[157] , sizeof(KdeltaWeight));
-	memcpy( &KorforgalomData, &Rx_buf[161] , sizeof(KorforgalomData));
+	memcpy( &KdKanyar, &Rx_buf[109] , sizeof(KdGyors));
+	memcpy( &BatteryMotor, &Rx_buf[113] , sizeof(BatteryMotor));
+	memcpy( &BatteryLogic, &Rx_buf[117] , sizeof(BatteryLogic));
+	memcpy( &ServoPos, &Rx_buf[121] , sizeof(ServoPos));
+	memcpy( &Kp, &Rx_buf[125] , sizeof(Kp));
+	memcpy( &Ki, &Rx_buf[129] , sizeof(Ki));
+	memcpy( &Kd, &Rx_buf[133] , sizeof(Kd));
+	memcpy( &kszi, &Rx_buf[137] , sizeof(kszi));
+	memcpy( &OutputDivisor, &Rx_buf[141] , sizeof(OutputDivisor));
+	memcpy( &D5percent, &Rx_buf[145] , sizeof(D5percent));
+	memcpy( &D5Add, &Rx_buf[149] , sizeof(D5Add));
+	memcpy( &D5Mul, &Rx_buf[153] , sizeof(D5Mul));
+	memcpy( &KpWeight, &Rx_buf[157] , sizeof(KpWeight));
+	memcpy( &KdeltaWeight, &Rx_buf[161] , sizeof(KdeltaWeight));
+	memcpy( &KorforgalomData, &Rx_buf[165] , sizeof(KorforgalomData));
+	memcpy( &rpi_rx_0, &Rx_buf[166] , sizeof(rpi_rx_0));
+	memcpy( &rpi_rx_1, &Rx_buf[167] , sizeof(rpi_rx_1));
 
 	if(Mode == GYORSASAGI)
 		strncpy(str_mode , "gyors" , sizeof(str_mode));

@@ -64,7 +64,7 @@
 #include "controller.h"
 #include "remotecontrol.h"
 #include "statemachine.h"
-
+#include "rpi.h"
 
 /* USER CODE END Includes */
 
@@ -641,13 +641,12 @@ static void MX_SPI2_Init(void)
 
   /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Mode = SPI_MODE_SLAVE;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi2.Init.NSS = SPI_NSS_HARD_INPUT;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -1066,9 +1065,6 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(VonalGetData_GPIO_Port, VonalGetData_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(MEMS_NSS_GPIO_Port, MEMS_NSS_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Vonal_NSS_GPIO_Port, Vonal_NSS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : B1_Pin */
@@ -1096,13 +1092,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MEMS_NSS_Pin */
-  GPIO_InitStruct.Pin = MEMS_NSS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(MEMS_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Vonal_NSS_Pin */
   GPIO_InitStruct.Pin = Vonal_NSS_Pin;
@@ -1253,6 +1242,7 @@ void InitTask(void const * argument)
 		BluetoothReceive();
 		HMIReceive();
 		StarterInit();
+		RpiListen();
 		//SetTasks();
 		osThreadTerminate(NULL);
 	}
@@ -1277,6 +1267,8 @@ void StartDefaultTask(void const * argument)
   osThreadTerminate(NULL);
   /* USER CODE END 5 */ 
 }
+
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
