@@ -72,7 +72,7 @@ void RemoteControllerTask(void const * argument)
 				else if( ratio_motor < MOTOR_RCPWM_MIN )
 					ratio_motor = MOTOR_RCPWM_MIN;
 				int motorSpeed = (ratio_motor-MOTOR_RCPWM_CENTER)/((MOTOR_RCPWM_MAX-MOTOR_RCPWM_CENTER)/100.0);
-				SetMotor(motorSpeed);
+				//SetMotor(motorSpeed);
 			}
 			/* DEBUG ONLY */
 			/*

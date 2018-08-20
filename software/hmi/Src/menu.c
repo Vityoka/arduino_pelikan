@@ -12,7 +12,8 @@ const char *menus[] = {
 "Speed",
 "Distance",
 "IMU",
-"RPi"
+"RPi",
+"DirCntrl"
 };
 
 uint8_t MenuCurrent=0;
@@ -167,6 +168,18 @@ void MenuDraw(uint8_t MenuCurrent)
 		ssd1306_SetCursor(16,48);
 		ssd1306_WriteString("TODO",Font_11x16,White);
 		break;
+
+	case 7:	//"Direct Control"
+		sprintf(buf, "SpeedSP 0.1" );
+		ssd1306_SetCursor(16,16);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "SpeedSP 0.5" );
+		ssd1306_SetCursor(16,32);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		sprintf(buf, "STOP" );
+		ssd1306_SetCursor(16,48);
+		ssd1306_WriteString(buf,Font_7x10,White);
+		break;
 	}
 	ssd1306_UpdateScreen();
 }
@@ -179,6 +192,7 @@ void MenuLogic(uint8_t Menupont)
 	// Ezután az adott commandhoz szükséges extra infok küldése
 	uint8_t cmd [10];
 	uint8_t temp;
+	float floattemp;
 	switch(MenuCurrent)
 	{
 	case 0:		//"StartStop"
@@ -214,6 +228,8 @@ void MenuLogic(uint8_t Menupont)
 			uint8_t tempcmd [] =  "\0\0\0\5S\n";
 			memcpy(cmd , tempcmd , sizeof(tempcmd));
 		}
+		uart_send(cmd , mystrlen(cmd) );
+		memset(cmd, 0, sizeof(cmd));
 		break;
 	case 1:
 		break;
@@ -225,9 +241,40 @@ void MenuLogic(uint8_t Menupont)
 		break;
 	case 5:
 		break;
+	case 6:
+		break;
+	case 7:	//Direct Control , setting SpeedSP
+
+		if(Menupont == 1)
+		{
+			floattemp = 0.1;
+			uint8_t tempcmd [] =  "\0\0\0______\n";
+			tempcmd[3] = 9;
+			tempcmd[4] = 'V';
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+			memcpy(&cmd[5] , &floattemp , sizeof(floattemp));
+		}
+		if(Menupont == 2)
+		{
+			floattemp = 0.5;
+			uint8_t tempcmd [] =  "\0\0\0______\n";
+			tempcmd[3] = 9;
+			tempcmd[4] = 'V';
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+			memcpy(&cmd[5] , &floattemp , sizeof(floattemp));
+		}
+		if(Menupont == 3)
+		{
+			uint8_t tempcmd [] =  "\0\0\0\5S\n";
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+		}
+
+		uart_send(cmd , mystrlen(cmd) );
+		memset(cmd, 0, sizeof(cmd));
+		break;
+
 	}
-	uart_send(cmd , mystrlen(cmd) );
-	memset(cmd, 0, sizeof(cmd));
+
 }
 
 

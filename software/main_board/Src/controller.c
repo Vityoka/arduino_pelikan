@@ -260,7 +260,6 @@ void SpeedControllerTask(void const * argument)
 		{
 			SetMotor(u_ki);
 		}
-
 		osDelay(Ts);
 	}
 	osThreadTerminate(NULL);
