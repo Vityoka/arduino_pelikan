@@ -11,7 +11,7 @@
 
 void InitRegisters(void)
 {
-	Mode = UGYESSEGI;
+	Mode = GYORSASAGI;
 
 	LinePositionFront = 0.0;
 	LinePositionBack = 0.0;

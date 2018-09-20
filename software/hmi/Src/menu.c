@@ -13,7 +13,7 @@ const char *menus[] = {
 "Distance",
 "IMU",
 "RPi",
-"DirCntrl"
+"SpeedSP"
 };
 
 uint8_t MenuCurrent=0;
@@ -51,6 +51,7 @@ void MenuPrev()
 	MenuDraw(MenuCurrent);
 }
 
+/*
 void MenuUp()
 {
 	if(MenuSub<MenuSubMax)
@@ -62,6 +63,7 @@ void MenuDown()
 	if(MenuSub)
 		MenuSub--;
 }
+*/
 
 void MenuDraw(uint8_t MenuCurrent)
 {
@@ -170,14 +172,18 @@ void MenuDraw(uint8_t MenuCurrent)
 		break;
 
 	case 7:	//"Direct Control"
-		sprintf(buf, "SpeedSP 0.1" );
+		sprintf(buf, "Set SpeedSP 0.1" );
 		ssd1306_SetCursor(16,16);
 		ssd1306_WriteString(buf,Font_7x10,White);
-		sprintf(buf, "SpeedSP 0.5" );
-		ssd1306_SetCursor(16,32);
+		sprintf(buf, "Set SpeedSP 0.5" );
+		ssd1306_SetCursor(16,28);
 		ssd1306_WriteString(buf,Font_7x10,White);
-		sprintf(buf, "STOP" );
-		ssd1306_SetCursor(16,48);
+		sprintf(buf, "Set SpeedSP 0" );
+		ssd1306_SetCursor(16,38);
+		ssd1306_WriteString(buf,Font_7x10,White);
+
+		sprintf(buf, "CurrSpeedSP: %2.1f" , SpeedSP );
+		ssd1306_SetCursor(16,50);
 		ssd1306_WriteString(buf,Font_7x10,White);
 		break;
 	}
@@ -243,7 +249,7 @@ void MenuLogic(uint8_t Menupont)
 		break;
 	case 6:
 		break;
-	case 7:	//Direct Control , setting SpeedSP
+	case 7:	//setting SpeedSP
 
 		if(Menupont == 1)
 		{
@@ -265,8 +271,35 @@ void MenuLogic(uint8_t Menupont)
 		}
 		if(Menupont == 3)
 		{
-			uint8_t tempcmd [] =  "\0\0\0\5S\n";
+			floattemp = 0;
+			uint8_t tempcmd [] =  "\0\0\0______\n";
+			tempcmd[3] = 9;
+			tempcmd[4] = 'V';
 			memcpy(cmd , tempcmd , sizeof(tempcmd));
+			memcpy(&cmd[5] , &floattemp , sizeof(floattemp));
+			//STOP COMMAND
+			//uint8_t tempcmd [] =  "\0\0\0\5S\n";
+			//memcpy(cmd , tempcmd , sizeof(tempcmd));
+		}
+		if(Menupont == 4)	//felfele
+		{
+			floattemp = SpeedSP;
+			floattemp += 0.1;
+			uint8_t tempcmd [] =  "\0\0\0______\n";
+			tempcmd[3] = 9;
+			tempcmd[4] = 'V';
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+			memcpy(&cmd[5] , &floattemp , sizeof(floattemp));
+		}
+		if(Menupont == 5)	//lefele
+		{
+			floattemp = SpeedSP;
+			floattemp -= 0.1;
+			uint8_t tempcmd [] =  "\0\0\0______\n";
+			tempcmd[3] = 9;
+			tempcmd[4] = 'V';
+			memcpy(cmd , tempcmd , sizeof(tempcmd));
+			memcpy(&cmd[5] , &floattemp , sizeof(floattemp));
 		}
 
 		uart_send(cmd , mystrlen(cmd) );

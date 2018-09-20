@@ -202,7 +202,7 @@ void SteeringStateSpaceController(void const * argument){
 	osThreadTerminate(NULL);
 }
 
-
+/*
 void SpeedControllerTask(void const * argument)
 {
 	const float K = 0.09014*(6/7.048);
@@ -245,9 +245,15 @@ void SpeedControllerTask(void const * argument)
 		//Inverz statikus karakterisztika
 		//törtvonalas karakterisztika közelítése lineárisan
 		if(u > 0)
-			u_ki = 30 + u * 0.46;
+		{
+			//u_ki = 30 + u * 0.46;
+			u_ki = 50 + u * 0.46;
+		}
 		else
-			u_ki = -30 + u * 0.46;
+		{
+			//u_ki = -30 + u * 0.46;
+			u_ki = -50 + u * 0.46;
+		}
 
 		//Nulla közelében motor lekapcsolása
 		if(SpeedSP == 0 && (abs(Speed) < 0.2) )
@@ -258,6 +264,68 @@ void SpeedControllerTask(void const * argument)
 		//motorra rákapcsoljuk a bravatkozó jelet
 		if( Running == RUN_FULL_AUTO || Running == RUN_MANUAL_STEERING || Running == RUN_STOP)
 		{
+			SetMotor(u_ki);
+		}
+		osDelay(Ts);
+	}
+	osThreadTerminate(NULL);
+}
+*/
+
+void SpeedControllerTask(void const * argument)
+{
+	const float Ts = 10;
+	const float Kp = 0;
+	const float Ki = 1;
+	float I = 0;
+
+	float u_ki;
+	float u;
+	float e , P;
+	while(1)
+	{
+		//Alapjel
+		SpeedSP = 0.3;
+		Running = RUN_FULL_AUTO;
+		e = SpeedSP-Speed;
+
+		P = e * Kp;
+		I += e * Ki * Ts;
+
+		u = P + I;
+
+		//Inverz statikus karakterisztika
+		//törtvonalas karakterisztika közelítése lineárisan
+		if(u > 0)
+		{
+			//u_ki = 30 + u * 0.46;
+			u_ki =  0 + u*0.46;
+		}
+		else
+		{
+			//u_ki = -30 + u * 0.46;
+			u_ki = 0 + u*0.46;
+		}
+
+		//Nulla közelében motor lekapcsolása
+		if(SpeedSP == 0 && (abs(Speed) < 0.2) )
+		{
+			u_ki = 0;
+		}
+
+		if( u_ki > 100)
+		{
+			I -= e * Ki * Ts;
+		}
+		else if( u_ki < -100 )
+		{
+			I -= e * Ki * Ts;
+		}
+
+		//motorra rákapcsoljuk a bravatkozó jelet
+		if( Running == RUN_FULL_AUTO || Running == RUN_MANUAL_STEERING || Running == RUN_STOP)
+		{
+			u_ki = 100;
 			SetMotor(u_ki);
 		}
 		osDelay(Ts);
@@ -291,11 +359,11 @@ void SetMotor(int motorSpeed)
 
 	if( motorSpeed >= 100 )
 	{
-		motorSpeed = 100;
+		motorSpeed = 99;
 	}
 	else if( motorSpeed <= -100 )
 	{
-		motorSpeed = -100;
+		motorSpeed = -99;
 	}
 	SpeedReg = (((4500-2250)/100.0)*motorSpeed) + 2250;
 

@@ -45,9 +45,16 @@ void DebounceButtons()
 
 void ButtonHandler(){
 	if(ButtonsPressed & MENU_UP)
-		  MenuUp();
+	{
+		MenuLogic(4);
+		//MenuUp();
+	}
+
 	if(ButtonsPressed & MENU_DOWN)
-		  MenuDown();
+	{
+		MenuLogic(5);
+		//MenuDown();
+	}
 	if(ButtonsPressed & MENU_LEFT)
 		  MenuPrev();
 	if(ButtonsPressed & MENU_RIGHT)

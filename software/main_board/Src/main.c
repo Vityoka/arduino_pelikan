@@ -1242,7 +1242,7 @@ void InitTask(void const * argument)
 		BluetoothReceive();
 		HMIReceive();
 		StarterInit();
-		RpiListen();
+		//RpiListen();
 		//SetTasks();
 		osThreadTerminate(NULL);
 	}
