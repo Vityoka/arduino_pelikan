@@ -128,7 +128,7 @@ void DetectTask(void const * argument)
 				LinetypeHypotheserGyorsasagi();
 			}
 		}
-		else
+		else if( Mode == UGYESSEGI )
 		{
 			CheckLineNumArray();
 			LinetypeHypotheserUgyessegi();

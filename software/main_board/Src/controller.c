@@ -285,8 +285,6 @@ void SpeedControllerTask(void const * argument)
 	while(1)
 	{
 		//Alapjel
-		SpeedSP = 0.3;
-		Running = RUN_FULL_AUTO;
 		e = SpeedSP-Speed;
 
 		P = e * Kp;
@@ -325,7 +323,6 @@ void SpeedControllerTask(void const * argument)
 		//motorra rákapcsoljuk a bravatkozó jelet
 		if( Running == RUN_FULL_AUTO || Running == RUN_MANUAL_STEERING || Running == RUN_STOP)
 		{
-			u_ki = 100;
 			SetMotor(u_ki);
 		}
 		osDelay(Ts);
@@ -365,8 +362,18 @@ void SetMotor(int motorSpeed)
 	{
 		motorSpeed = -99;
 	}
-	SpeedReg = (((4500-2250)/100.0)*motorSpeed) + 2250;
 
+	//temporary limit of speed
+	if( motorSpeed > 10)
+	{
+		motorSpeed = 10;
+	}
+	else if ( SpeedReg < -10 )
+	{
+		motorSpeed = -10;
+	}
+
+	SpeedReg = (((4500-2250)/100.0)*motorSpeed) + 2250;
 
 	if(Running != RUN_STOP)
 	{

@@ -1181,7 +1181,16 @@ void SetTasks(){
 		//osThreadResume(ReadMEMSTaskHandle);
 		osThreadResume(StateMachineTaskHandle);
 	}
-	else
+	else if( Mode == GYORSASAGI )
+	{
+		osThreadSuspend(RemotecontrolTaskHandle);
+		osThreadSuspend(ReadDistanceSensorsTaskHandle);
+		osThreadSuspend(ReadMotorCurrentTaskHandle);
+		osThreadSuspend(InfraReceiveTaskHandle);
+		//osThreadSuspend(ReadMEMSTaskHandle);
+		osThreadSuspend(StateMachineTaskHandle);
+	}
+	else if( Mode == SLAVE)
 	{
 		osThreadSuspend(RemotecontrolTaskHandle);
 		osThreadSuspend(ReadDistanceSensorsTaskHandle);
@@ -1222,27 +1231,27 @@ void InitTask(void const * argument)
 		osDelay(500);
 		osThreadResume(LineDataTaskHandle);
 		osThreadResume(SendBTTaskHandle);
-		osThreadResume(DetectTaskHandle);
+		//osThreadResume(DetectTaskHandle);
 		osThreadResume(defaultTaskHandle);
-		osThreadResume(RemotecontrolTaskHandle);
-		osThreadResume(CheckBatteriesTaskHandle);
+		//osThreadResume(RemotecontrolTaskHandle);
+		//osThreadResume(CheckBatteriesTaskHandle);
 		osThreadResume(ReadDistanceSensorsTaskHandle);
-		osThreadResume(ReadMotorCurrentTaskHandle);
-		osThreadResume(InfraReceiveTaskHandle);
+		//osThreadResume(ReadMotorCurrentTaskHandle);
+		//osThreadResume(InfraReceiveTaskHandle);
 		//osThreadResume(ReadMEMSTaskHandle);
 		osThreadResume(SpeedControllerTaskHandle);
 		osThreadResume(UthosszTaskHandle);
-		osThreadResume(SteeringStateSpaceControllerHandle);
+		//osThreadResume(SteeringStateSpaceControllerHandle);
 		osThreadResume(ServoSetterTaskHandle);
-		osThreadResume(LineDetectorTaskHandle);
-		osThreadResume(StateMachineTaskHandle);
+		//osThreadResume(LineDetectorTaskHandle);
+		//osThreadResume(StateMachineTaskHandle);
 		//osThreadResume(ControllerTaskHandle);
-		osThreadResume(CarTrackerTaskHandle);
+		//osThreadResume(CarTrackerTaskHandle);
 		osThreadResume(HMITaskHandle);
 		BluetoothReceive();
 		HMIReceive();
-		StarterInit();
-		//RpiListen();
+		//StarterInit();
+		RpiListen();
 		//SetTasks();
 		osThreadTerminate(NULL);
 	}

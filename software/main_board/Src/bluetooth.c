@@ -212,6 +212,11 @@ void CommandParser(uint8_t* rxbuf , uint16_t rx_index )
 						Mode = GYORSASAGI;
 					//SetTasks();
 					break;
+				case '_':	//slave mód
+					if( Mode != SLAVE)
+						Mode = SLAVE;
+					//SetTasks();
+					break;
 				case 'l':	//TclMotor
 					TclMotor = 0;
 					TclMotor |= (rxbuf[5] << 8);

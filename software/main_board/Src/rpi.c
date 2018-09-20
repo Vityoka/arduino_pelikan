@@ -7,6 +7,7 @@
 
 #include "register_map.h"
 #include "rpi.h"
+#include "bluetooth.h"
 
 extern SPI_HandleTypeDef hspi2;
 
@@ -30,7 +31,7 @@ void RPiSPITxFlush(){
 
 void RpiListen(){
 	RPiSPIRxFlush();
-	if( HAL_SPI_TransmitReceive_DMA(&hspi2, SPI_TX , SPI_RX, 2) != HAL_OK )
+	if( HAL_SPI_TransmitReceive_DMA(&hspi2, SPI_TX , SPI_RX, 10) != HAL_OK )
 	{
 		asm("bkpt 255");
 	}
@@ -44,10 +45,14 @@ void RPiSPICallback()
 	{
 		rpi_rx[i] = SPI_RX[i];
 	}
-	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 	RPiSPIRxFlush();
-	if( HAL_SPI_TransmitReceive_DMA(&hspi2, SPI_TX , SPI_RX, 2) != HAL_OK )
+	CommandParser( rpi_rx , SPI_RX_SIZE);
+	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+
+	if( HAL_SPI_TransmitReceive_DMA(&hspi2, SPI_TX , SPI_RX, 10) != HAL_OK )
 	{
 		asm("bkpt 255");
 	}
+
+
 }

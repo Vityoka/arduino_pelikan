@@ -17,7 +17,7 @@
 //DEFINES
 #define GYORSASAGI 0
 #define UGYESSEGI 1
-
+#define SLAVE 2
 
 #define BT_BUFF_RX_SIZE 128
 #define BT_BUFF_TX_SIZE 1024

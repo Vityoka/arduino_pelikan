@@ -33,7 +33,7 @@ void StarterEXTICallback(){
 		Running = RUN_STOP;
 		SpeedSP = 0;
 	}
-	else
+	else if( Mode == UGYESSEGI )
 	{
 		static int num_exti_int = 0;
 		num_exti_int++;
