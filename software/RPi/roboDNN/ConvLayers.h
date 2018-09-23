@@ -43,7 +43,7 @@ private:
     bool hasBias;
 public:
     TransposedConvLayer(int32_t _h, int32_t _w, int32_t _inCh, int32_t _outCh, int32_t _size, int32_t _stride, int32_t _padding, int32_t _outPadding, ACTIVATION _activation, bool _hasBias);
-    TransposedConvLayer();
+    ~TransposedConvLayer();
     void forward();
     bool HasBias();
     int32_t getWorkSpaceSize();
@@ -59,7 +59,7 @@ private:
     bool hasBias;
 public:
     FCLayer(int32_t _inCh, int32_t _outCh, ACTIVATION _activation, bool _hasBias);
-    FCLayer();
+    ~FCLayer();
     void forward();
     bool HasBias();
     int32_t getWorkSpaceSize();

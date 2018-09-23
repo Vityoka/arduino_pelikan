@@ -131,7 +131,7 @@ TransposedConvLayer::TransposedConvLayer(int32_t _h, int32_t _w, int32_t _inCh, 
     outputs = new float[outW*outH*outCh];
 }
 
-TransposedConvLayer::TransposedConvLayer()
+TransposedConvLayer::~TransposedConvLayer()
 {
     delete [] weights;
     if (hasBias) {
@@ -216,7 +216,7 @@ FCLayer::FCLayer(int32_t _inCh, int32_t _outCh, ACTIVATION _activation, bool _ha
     outputs = new float[outCh];
 }
 
-FCLayer::FCLayer()
+FCLayer::~FCLayer()
 {
     delete [] weights;
     if (hasBias) {
