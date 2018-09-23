@@ -6,8 +6,9 @@
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
-#include "roboDNN/roboDNN.h"
+#include "RoboDNN/RoboDNN.h"
 #include <time.h>
+#include "comm.h"
 
 using namespace cv;
 using namespace std;
@@ -28,12 +29,38 @@ void ZeroMeanUnitDev(cv::Mat& Img);
 void ZeroMeanUnitDev2(cv::Mat& Img);
 void robodnn_live(Network& net, cv::Mat img);
 
+int main()
+{
+	spi_init();
+	spi_set_Mode_Slave();
+	spi_set_Mode_Auto();
+	while(1)
+	{
+		spi_set_SpeedSP(0.15);
+		sleep(2);
+		spi_set_SpeedSP(0.3);
+		sleep(2);
+		spi_set_ServoPos(0.2);
+		spi_set_SpeedSP(0);
+		sleep(2);
+		spi_set_SpeedSP(0.1);
+		sleep(2);
+		spi_set_SpeedSP(0);
+		sleep(2);
+		spi_set_ServoPos(-0.2);
+		spi_set_SpeedSP(-0.1);
+		sleep(2);
+		spi_set_SpeedSP(0);
+	}
+}
 
+/*
 int main(){
 	//capture();
 	
-	Network net("F:/Projects/RobonAUT2/Dipterv/software/RPi/RoboDNN", "example.cfg");
-	const int RUNS = 100;
+	//Network net("~/Projects/roadSignDetector/RoboDNN/", "example.cfg");
+	Network net("./RoboDNN/", "example.cfg");	
+	const int RUNS = 1;
 	clock_t begin = clock();
 	for (int i = 0; i < RUNS; i++)
 	{
@@ -46,11 +73,12 @@ int main(){
 	
 	return 0;
 }
+*/
 
 void robodnn(Network& net)
 {
 	Mat testimg(32, 32, CV_8UC3);
-	testimg = imread("C:/roadSignDataset/datasetFinal/testFULL/08/img(1601).jpg", CV_LOAD_IMAGE_COLOR);
+	testimg = imread("./diff/04/img(800).jpg", CV_LOAD_IMAGE_COLOR);
 	cv::copyMakeBorder(testimg, testimg, 2, 2, 2, 2, BORDER_CONSTANT, 0);
 	testimg.convertTo(testimg, CV_32FC3, 1.0 / 255.0);
 	ZeroMeanUnitDev(testimg);

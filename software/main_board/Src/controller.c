@@ -284,6 +284,7 @@ void SpeedControllerTask(void const * argument)
 	float e , P;
 	while(1)
 	{
+
 		//Alapjel
 		e = SpeedSP-Speed;
 
@@ -363,14 +364,14 @@ void SetMotor(int motorSpeed)
 		motorSpeed = -99;
 	}
 
-	//temporary limit of speed
-	if( motorSpeed > 10)
+	//temporary limit of speed, most ugyse használom gyorsulni
+	if( motorSpeed > 35)
 	{
-		motorSpeed = 10;
+		motorSpeed = 35;
 	}
-	else if ( SpeedReg < -10 )
+	else if ( motorSpeed < -35 )
 	{
-		motorSpeed = -10;
+		motorSpeed = -35;
 	}
 
 	SpeedReg = (((4500-2250)/100.0)*motorSpeed) + 2250;
