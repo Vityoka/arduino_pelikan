@@ -35,7 +35,7 @@ int spi_send_dummy()
 
 int spi_set_SpeedSP( float SpeedSP )
 {
-	delay(10);
+
 	floatbuf = SpeedSP;
 	tx_buffer[0] = 0;
     tx_buffer[1] = 0;
@@ -43,12 +43,13 @@ int spi_set_SpeedSP( float SpeedSP )
 	tx_buffer[3] = 10;
 	tx_buffer[4] = 'V';
 	memcpy(&tx_buffer[5] , &floatbuf , sizeof(floatbuf));
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
 
 int spi_set_ServoPos( float ServoPos )
 {
-	delay(10);
 	floatbuf = ServoPos;
 	tx_buffer[0] = 0;
     tx_buffer[1] = 0;
@@ -56,23 +57,25 @@ int spi_set_ServoPos( float ServoPos )
 	tx_buffer[3] = 10;
 	tx_buffer[4] = 's';
 	memcpy(&tx_buffer[5] , &floatbuf , sizeof(floatbuf));
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
 
 int spi_set_Mode_Stop()
 {
-	delay(10);
 	tx_buffer[0] = 0;
     tx_buffer[1] = 0;
 	tx_buffer[2] = 0;
 	tx_buffer[3] = 10;
 	tx_buffer[4] = 'S';
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
 
 int spi_set_Mode_Auto()
 {
-	delay(10);
 	tx_buffer[0] = 0;
     tx_buffer[1] = 0;
 	tx_buffer[2] = 0;
@@ -80,12 +83,13 @@ int spi_set_Mode_Auto()
 	tx_buffer[4] = 'G';
 	tx_buffer[5] = 2;
 
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
 
 int spi_set_Mode_Manual()
 {
-	delay(10);
 	tx_buffer[0] = 0;
     tx_buffer[1] = 0;
 	tx_buffer[2] = 0;
@@ -93,65 +97,49 @@ int spi_set_Mode_Manual()
 	tx_buffer[4] = 'G';
 	tx_buffer[5] = 3;
 
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
 
 
 
 int spi_set_Mode_Slave()
 {
-	delay(10);
 	tx_buffer[0] = 0;
         tx_buffer[1] = 0;
 	tx_buffer[2] = 0;
 	tx_buffer[3] = 10;
 	tx_buffer[4] = 'y';
-	return wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	int ret = wiringPiSPIDataRW(CHANNEL, tx_buffer, 10);
+	delay(10);
+	return ret;
 }
-
-
+/*
 int main()
 {
 	spi_init();
 	spi_set_Mode_Slave();
 	spi_set_Mode_Auto();
-	float i = 0;
 	while(1)
 	{
-		spi_set_SpeedSP(0 + i);
-		i += 0.01;
-		if( i > 1 )
-		{
-			sleep(2);
-			i = 0;
-			spi_set_SpeedSP(0);
-			sleep(2);
-		}
 
-
-/*
 		spi_set_SpeedSP(0.15);
 		sleep(2);
 		spi_set_SpeedSP(0.3);
 		sleep(2);
+		spi_set_ServoPos(0.2);
 		spi_set_SpeedSP(0);
 		sleep(2);
-		spi_set_ServoPos(0.2);
-		sleep(2);
-		spi_set_SpeedSP(-0.1);
+		spi_set_SpeedSP(0.1);
 		sleep(2);
 		spi_set_SpeedSP(0);
 		sleep(2);
 		spi_set_ServoPos(-0.2);
-		sleep(2);
-		spi_set_SpeedSP(0.5);
+		spi_set_SpeedSP(-0.1);
 		sleep(2);
 		spi_set_SpeedSP(0);
-		sleep(2);
-		spi_set_ServoPos(0);
-		sleep(2);
-*/
 	}
-
-
 }
+*/
+
