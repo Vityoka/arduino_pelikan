@@ -50,7 +50,8 @@ void InitRegisters(void)
 	Uthossz = 0;
 	UthosszTarget = 0;
 
-	TclMotor = 200;
+	TclMotor = 600;
+
 
 	kszi = 1.1;
 	OutputDivisor = 1;

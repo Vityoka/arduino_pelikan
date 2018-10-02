@@ -15,7 +15,7 @@
 extern SemaphoreHandle_t Semaphore_Uthossz_Achieved;
 extern TIM_HandleTypeDef htim2;
 extern EventGroupHandle_t Eventgroup_Triggers;
-
+TimerHandle_t xTimers[NUM_OF_TIMERS];
 
 void UthosszTask(const * argument)
 {
@@ -202,7 +202,81 @@ void SteeringStateSpaceController(void const * argument){
 	osThreadTerminate(NULL);
 }
 
-/*
+void SpeedControllerDebuggerStart()
+{
+	if( xTimerStart( xTimers[0] , 0) != pdPASS)
+	{
+		asm("bkpt");
+	}
+}
+
+void SpeedControllerDebuggerWhile()
+{
+	static int n = 0;
+	if( CarCounterTimerElapsedFlag == 1)
+	{
+		CarCounterTimerElapsedFlag = 0;
+		if( n == 0 )
+		{
+			SpeedSP = 0;
+		}
+		else if( n == 1)
+		{
+			SpeedSP = 0.1;
+		}
+		else if ( n == 2)
+		{
+			SpeedSP = 0.1;
+		}
+		else if ( n == 3)
+		{
+			SpeedSP = 0.1;
+		}
+		else if ( n == 4)
+		{
+			SpeedSP = 0;
+		}
+		else if ( n == 5)
+		{
+			SpeedSP = -0.1;
+		}
+		else if ( n == 6)
+		{
+			SpeedSP = -0.1;
+		}
+		else if ( n == 7)
+		{
+			SpeedSP = -0.1;
+		}
+		else if ( n == 8)
+				{
+					SpeedSP = 0;
+				}
+		else if ( n == 9)
+				{
+					SpeedSP = 0.2;
+				}
+		else if ( n == 10)
+				{
+					SpeedSP = 0;
+				}
+		else if ( n == 11)
+				{
+					SpeedSP = -0.2;
+				}
+
+
+		if( n >= 11)
+			n = 0;
+		else
+			n++;
+		if( xTimerStart( xTimers[0] , 0) != pdPASS)
+		{
+			asm("bkpt");
+		}
+	}
+}
+
 void SpeedControllerTask(void const * argument)
 {
 	const float K = 0.09014*(6/7.048);
@@ -219,8 +293,12 @@ void SpeedControllerTask(void const * argument)
 	float u_ki;
 	float u;
 	float e;
+	//SpeedControllerDebuggerStart();
 	while(1)
 	{
+		//SpeedControllerDebuggerWhile();
+		//Running = RUN_FULL_AUTO;
+
 		//Kc számítása
 		Kc = 1 / Kd_mot * (1 - exp(-Ts / (float)TclMotor));
 
@@ -246,13 +324,13 @@ void SpeedControllerTask(void const * argument)
 		//törtvonalas karakterisztika közelítése lineárisan
 		if(u > 0)
 		{
-			//u_ki = 30 + u * 0.46;
-			u_ki = 50 + u * 0.46;
+			u_ki = 10 + u * 0.46;
+			//u_ki = 50 + u * 0.46;
 		}
 		else
 		{
-			//u_ki = -30 + u * 0.46;
-			u_ki = -50 + u * 0.46;
+			u_ki = -10 + u * 0.46;
+			//u_ki = -50 + u * 0.46;
 		}
 
 		//Nulla közelében motor lekapcsolása
@@ -270,8 +348,11 @@ void SpeedControllerTask(void const * argument)
 	}
 	osThreadTerminate(NULL);
 }
-*/
 
+
+
+
+/*
 void SpeedControllerTask(void const * argument)
 {
 	const float Ts = 10;
@@ -282,9 +363,12 @@ void SpeedControllerTask(void const * argument)
 	float u_ki;
 	float u;
 	float e , P;
+
+	SpeedControllerDebuggerStart();
 	while(1)
 	{
-
+		SpeedControllerDebuggerWhile();
+		Running = RUN_FULL_AUTO;
 		//Alapjel
 		e = SpeedSP-Speed;
 
@@ -330,6 +414,7 @@ void SpeedControllerTask(void const * argument)
 	}
 	osThreadTerminate(NULL);
 }
+*/
 
 void ServoSetterTask()
 {
@@ -364,14 +449,14 @@ void SetMotor(int motorSpeed)
 		motorSpeed = -99;
 	}
 
-	//temporary limit of speed, most ugyse használom gyorsulni
-	if( motorSpeed > 35)
+	//temporary limit of speed, most ugyse használom gyorsulni, 30-as motorSpeed limit kb 1.2 m/s földön. levegoben 2.7m/s
+	if( motorSpeed > 30)
 	{
-		motorSpeed = 35;
+		motorSpeed = 30;
 	}
-	else if ( motorSpeed < -35 )
+	else if ( motorSpeed < -30 )
 	{
-		motorSpeed = -35;
+		motorSpeed = -30;
 	}
 
 	SpeedReg = (((4500-2250)/100.0)*motorSpeed) + 2250;

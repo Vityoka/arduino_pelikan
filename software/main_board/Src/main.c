@@ -1140,7 +1140,7 @@ void InitTimers()
 			 "Timer",
 			 /* The timer period in ticks, must be
 			 greater than 0. */
-			 10000,
+			 5000,
 			 /* The timers will auto-reload themselves
 			 when they expire. */
 			 pdFALSE,
